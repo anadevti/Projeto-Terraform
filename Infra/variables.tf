@@ -21,5 +21,9 @@ variable "maximo" {
 variable "nomeGrupo" {
   type = string
 }
+
+variable "producao" {
+  type = bool
+}
 ## Variaveis sendo declaradas em infra, para serem atribuidas em
 ## ambiente Dev ou Prod!

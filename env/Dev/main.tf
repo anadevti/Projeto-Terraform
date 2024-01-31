@@ -3,8 +3,9 @@ module "aws-dev" {
   instance = "t2.micro"
   region_aws = "us-west-2"
   chave = "iac-dev"
-}
-
-output "IP" {
-  value = module.aws-dev.IP_Pub
+  security_group = "DEV"
+  minimo = 0
+  maximo = 1
+  nomeGrupo = "DEV"
+  producao = false
 }

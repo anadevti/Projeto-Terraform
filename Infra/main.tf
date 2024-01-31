@@ -23,8 +23,14 @@ resource "aws_launch_template" "maquina" {
     Name = "Terraform ansible com python"
   }
   security_group_names = [ var.security_group ]
-  user_data = filebase64("ansible.sh")
+  user_data = var.producao ? filebase64("ansible.sh"): "" # equivalente a um IF
 }
+# por exemplo:
+# if(var.producao){
+#   filebase64("ansible.sh")
+# } else{
+#   ""
+# }
 
 resource "aws_key_pair" "CHAVESSH" {
   key_name = var.chave
@@ -43,7 +49,8 @@ resource "aws_autoscaling_group" "grupo" {
     id = aws_launch_template.maquina.id
     version = "$Latest"
   }
-  target_group_arns = [aws_lb_target_group.alvoLoadBalancer.arn]
+  target_group_arns = var.producao ? [aws_lb_target_group.alvoLoadBalancer[0].arn
+  ] : []
 }
 
 resource "aws_default_subnet" "subnet_1" {
@@ -57,6 +64,7 @@ resource "aws_default_subnet" "subnet_2" {
 resource "aws_lb" "loadBalancer" {
   internal = false
   subnets = [ aws_default_subnet.subnet_1.id, aws_default_subnet.subnet_2 ]
+  count = var.producao ? 1 : 0
 }
 
 resource "aws_lb_target_group" "alvoLoadBalancer" {
@@ -64,6 +72,7 @@ resource "aws_lb_target_group" "alvoLoadBalancer" {
   port = "8000"
   protocol = "HTTP"
   vpc_id = aws_default_vpc.default.id
+  count = var.producao ? 1 : 0
 }
 
 resource "aws_default_vpc" "default" {
@@ -71,13 +80,14 @@ resource "aws_default_vpc" "default" {
 }
 
 resource "aws_lb_listener" "entradaLB" {
-  load_balancer_arn = aws_lb.loadBalancer.arn
+  load_balancer_arn = aws_lb.loadBalancer[0].arn
   port = "8000"
   protocol = "HTTP"
   default_action {
     type = "forward"
-    target_group_arn = aws_lb_target_group.alvoLoadBalancer.arn
+    target_group_arn = aws_lb_target_group.alvoLoadBalancer[0].arn
     }
+    count = var.producao ? 1 : 0
 }
 resource "aws_autoscaling_policy" "escala-prod" {
   name = "terarform-escala"
@@ -89,4 +99,5 @@ resource "aws_autoscaling_policy" "escala-prod" {
     }
     target_value = 50.0
   }
+  count = var.producao ? 1 : 0
 }
