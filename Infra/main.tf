@@ -49,6 +49,30 @@ resource "aws_autoscaling_group" "grupo" {
     id = aws_launch_template.maquina.id
     version = "$Latest"
   }
+# resource "aws_autoscaling_schedule" "liga" {
+#   scheduled_action_name  = "liga"
+#   min_size               = 0
+#   max_size               = 1
+#   desired_capacity       = 1
+#   start_time             = timeadd (timestamp(),"10m")
+#   recurrence = "0 7 * * MON-FRI"
+#   autoscaling_group_name = aws_autoscaling_group.grupo.name
+# }
+
+## Campo que seria usado para agendamento de ligar e desligar as maquinas, por algum motivo nao funcionou
+## vou buscar uma solução, acredito que seja a versão do meu provider.
+
+# resource "aws_autoscaling_schedule" "desliga" {
+#   scheduled_action_name  = "desliga"
+#   min_size               = 0
+#   max_size               = 1
+#   desired_capacity       = 0
+#   start_time             = timeadd (timestamp(),"11m")
+#   recurrence = "0 18 * * MON-FRI"
+#   autoscaling_group_name = aws_autoscaling_group.grupo.name
+# }
+
+
   target_group_arns = var.producao ? [aws_lb_target_group.alvoLoadBalancer[0].arn
   ] : []
 }
